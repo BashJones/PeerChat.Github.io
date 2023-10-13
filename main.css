@@ -2,3 +2,10 @@ body {
 	background-color: #e5e7eb;
 	font-family: Arial, Helvetica, sans-serif;
 }
+
+#videos{
+	display: grid;
+	grid-template-columns: 1fr 1fr; /**1fr 1fr ensures that they are taking up 50% of each container**/
+	gap: 2em;
+}
+
