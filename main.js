@@ -124,7 +124,7 @@ let createOffer = async (MemberId) => {
     client.sendMessageToPeer({text:JSON.stringify({'type':'offer', 'offer':offer })}, MemberId)
 }
     //passing in the offer
-let createAnswer = async (MemberID, offer) => {
+let createAnswer = async (MemberId, offer) => {
     await createPeerConnection(MemberId)
     //offer for receiving peer
     await peerConnection.setRemoteDescription(offer)
