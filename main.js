@@ -42,6 +42,7 @@ let init = async () => {
 
     //Event listener for when the join method is called
     channel.on('MemberJoined', handleUserJoined)
+    channel.on('MemberLeft',handleUserLeft)
 
     //Event listener for when message from peer is sent
     client.on('MessageFromPeer', handleMessageFromPeer)
@@ -49,6 +50,10 @@ let init = async () => {
 
     localStream = await navigator.mediaDevices.getUserMedia({video:true, audio:false})
     document.getElementById('user-1').srcObject = localStream
+}
+
+let handleUserLeft = async (MemberId) => {
+    document.getElementById('user-2').style.display = 'none'
 }
 
 let handleMessageFromPeer = async (message, MemberId) => {
@@ -83,6 +88,8 @@ let createPeerConnection = async (MemberId) => {
 
     remoteStream = new MediaStream()
     document.getElementById('user-2').srcObject = remoteStream
+    //display once the user actually joins
+    document.getElementById('user-2').style.display = 'block'
 
     //Handling when page refresh causes issues with starting cameras
     if(!localStream){
@@ -142,5 +149,13 @@ let addAnswer = async (answer) => {
         peerConnection.setRemoteDescription(answer)
     }
 }
+
+//se
+let leaveChannel = async () => {
+    await channel.leave()
+    await client.logout()
+}
+//nuke the vid if user chips and window closes out
+window.addEventListener('beforeunload', leaveChannel)
 
 init()
