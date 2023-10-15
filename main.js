@@ -6,6 +6,18 @@ let token = null;
 //generate a random ID number for now mehhhh
 let uid = String(Math.floor(Math.random() * 1000))
 
+//parse the url and get the ID values
+let queryString = window.location.search
+let urlParams = new URLSearchParams(queryString)
+
+//get the room ID
+let roomId = urlParams.get('room')
+
+//make sure user gets room Id before going to a room otherwise re-direct
+if(!roomId){
+    window.location = 'lobby.html'
+}
+
 //create client object we can log in with
 let client;
 //The channel that the users actually join
@@ -35,9 +47,8 @@ let init = async () => {
     //The token value is null till you decide to implement it
     await client.login({uid, token})
 
-    //change main to room ID once you figure out how
     //Create channel and join functionality
-    channel = client.createChannel('main')
+    channel = client.createChannel(roomId)
     await channel.join()
 
     //Event listener for when the join method is called
