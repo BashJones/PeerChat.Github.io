@@ -53,7 +53,22 @@ let init = async () => {
 
 let handleMessageFromPeer = async (message, MemberId) => {
     message = JSON.parse(message.text)
-    console.log('Message:', message);
+    //get the offer create the answer
+    if (message.type === 'offer') {
+        createAnswer(MemberId, message.offer)
+    }
+
+    //When we get the answer go ahead and add the answer brooo!
+    if (message.type === 'answer') {
+        addAnswer(message.answer)
+    }
+
+    if (message.type === 'candidate'){
+    //check if we have a peer connection then set the candidate
+       if(peerConnection){
+        peerConnection.addIceCandidate(message.candidate)
+       }
+    }
 }
 
 //Function to handle users who join
@@ -62,12 +77,7 @@ let handleUserJoined = async (MemberId) => {
     createOffer(MemberId)
 }
 
-/**
- * peerConnection stores all info/methods to connect between peers
- * remoteStream sets up media stream for other user
- * offer - each peerConnection has an offer/answer (SDP)
- */
-let createOffer = async (MemberId) => {
+let createPeerConnection = async (MemberId) => {
     //pass in the servers
     peerConnection = new RTCPeerConnection(servers)
 
@@ -100,6 +110,11 @@ let createOffer = async (MemberId) => {
             client.sendMessageToPeer({text:JSON.stringify({'type':'candidate', 'candidate':event.candidate })}, MemberId)
         }
     }
+}
+
+
+let createOffer = async (MemberId) => {
+    await createPeerConnection(MemberId)
 
     let offer = await peerConnection.createOffer()
     //Trigger STUN server and create candidates
@@ -108,9 +123,24 @@ let createOffer = async (MemberId) => {
     //send a message to a peer with the expected ID
     client.sendMessageToPeer({text:JSON.stringify({'type':'offer', 'offer':offer })}, MemberId)
 }
+    //passing in the offer
+let createAnswer = async (MemberID, offer) => {
+    await createPeerConnection(MemberId)
+    //offer for receiving peer
+    await peerConnection.setRemoteDescription(offer)
+    //for p2 remotedesc is offer and localdesk is answer
+    let answer = await peerConnection.createAnswer()
+    await peerConnection.setLocalDescription(answer)
 
-let createAnswer = async (MemberID) => {
+    client.sendMessageToPeer({text:JSON.stringify({'type':'answer', 'answer':answer})}, MemberId)
+}
 
+    
+let addAnswer = async (answer) => {
+    //If we don't have a remote description, go ahead and set it and pass in the answer
+    if(!peerConnection.currentRemoteDescription){
+        peerConnection.setRemoteDescription(answer)
+    }
 }
 
 init()
