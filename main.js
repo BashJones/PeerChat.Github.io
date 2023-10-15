@@ -36,33 +36,38 @@ let init = async () => {
     await client.login({uid, token})
 
     //change main to room ID once you figure out how
-    //Create channel and jon functionality
+    //Create channel and join functionality
     channel = client.createChannel('main')
     await channel.join()
 
     //Event listener for when the join method is called
     channel.on('MemberJoined', handleUserJoined)
 
+    //Event listener for when message from peer is sent
+    client.on('MessageFromPeer', handleMessageFromPeer)
+
+
     localStream = await navigator.mediaDevices.getUserMedia({video:true, audio:false})
     document.getElementById('user-1').srcObject = localStream
+}
 
-    createOffer()
+let handleMessageFromPeer = async (message, MemberId) => {
+    message = JSON.parse(message.text)
+    console.log('Message:', message);
 }
 
 //Function to handle users who join
-let handleUserJoined = async (MemberID) => {
-    console.log('A new hero joined the channel', MemberID)
+let handleUserJoined = async (MemberId) => {
+    console.log('A new hero joined the channel', MemberId)
+    createOffer(MemberId)
 }
-
-
-
 
 /**
  * peerConnection stores all info/methods to connect between peers
  * remoteStream sets up media stream for other user
  * offer - each peerConnection has an offer/answer (SDP)
  */
-let createOffer = async () => {
+let createOffer = async (MemberId) => {
     //pass in the servers
     peerConnection = new RTCPeerConnection(servers)
 
@@ -94,8 +99,8 @@ let createOffer = async () => {
     //Trigger STUN server and create candidates
     await peerConnection.setLocalDescription(offer)
 
-
-    console.log('Offer:', offer)
+    //send a message to a peer with the expected ID
+    client.sendMessageToPeer({text:JSON.stringify({'type':'offer', 'offer':offer })}, MemberId)
 }
 
 init()
