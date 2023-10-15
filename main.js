@@ -74,6 +74,12 @@ let createOffer = async (MemberId) => {
     remoteStream = new MediaStream()
     document.getElementById('user-2').srcObject = remoteStream
 
+    //Handling when page refresh causes issues with starting cameras
+    if(!localStream){
+        localStream = await navigator.mediaDevices.getUserMedia({video:true, audio:false})
+    document.getElementById('user-1').srcObject = localStream
+    }
+
     //loop through all the a/v tracks and add them to PeerConnection so remotePeer can access them
     localStream.getTracks().forEach((track) => {
         peerConnection.addTrack(track, localStream)
@@ -91,7 +97,7 @@ let createOffer = async (MemberId) => {
     //Generate ICE candidates
     peerConnection.onicecandidate = async (event) => {
         if(event.candidate){
-            console.log('New ICE Candidate', event.candidate)
+            client.sendMessageToPeer({text:JSON.stringify({'type':'candidate', 'candidate':event.candidate })}, MemberId)
         }
     }
 
@@ -101,6 +107,10 @@ let createOffer = async (MemberId) => {
 
     //send a message to a peer with the expected ID
     client.sendMessageToPeer({text:JSON.stringify({'type':'offer', 'offer':offer })}, MemberId)
+}
+
+let createAnswer = async (MemberID) => {
+
 }
 
 init()
