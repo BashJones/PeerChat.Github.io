@@ -104,7 +104,7 @@ let createPeerConnection = async (MemberId) => {
 
     //Handling when page refresh causes issues with starting cameras
     if(!localStream){
-        localStream = await navigator.mediaDevices.getUserMedia({video:true, audio:false})
+        localStream = await navigator.mediaDevices.getUserMedia({video:true, audio:true})
     document.getElementById('user-1').srcObject = localStream
     }
 
@@ -166,7 +166,40 @@ let leaveChannel = async () => {
     await channel.leave()
     await client.logout()
 }
+
+let toggleCamera = async () => {
+    //search all the tracks and loop through till you find the value of video
+    let videoTrack = localStream.getTracks().find(track => track.kind === 'video')
+
+    //check if video track enabled then toggle on/off and change colour
+    if(videoTrack.enabled){
+        videoTrack.enabled = false
+        document.getElementById('camera-btn').style.backgroundColor = 'rgb(255, 80, 80)'
+    } else {
+        videoTrack.enabled = true
+        document.getElementById('camera-btn').style.backgroundColor = 'rgb(179, 102, 242, 0.9)'
+    }
+}
+
+let toggleMic = async () => {
+    //search all the tracks and loop through till you find the value of audio
+    let audioTrack = localStream.getTracks().find(track => track.kind === 'audio')
+
+    //check if audio track enabled then toggle on/off and change colour
+    if(audioTrack.enabled){
+        audioTrack.enabled = false
+        document.getElementById('mic-btn').style.backgroundColor = 'rgb(255, 80, 80)'
+    } else {
+        audioTrack.enabled = true
+        document.getElementById('mic-btn').style.backgroundColor = 'rgb(179, 102, 242, 0.9)'
+    }
+}
+
 //nuke the vid if user chips and window closes out
 window.addEventListener('beforeunload', leaveChannel)
+
+//camera/mic button event listeners
+document.getElementById('camera-btn').addEventListener('click', toggleCamera)
+document.getElementById('mic-btn').addEventListener('click', toggleMic)
 
 init()
