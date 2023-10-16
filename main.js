@@ -36,6 +36,15 @@ const servers = {
     ]
 }
 
+let constraints = {
+    video:{
+        width:{min:640, ideal:1920, max:1080},
+        height:{min:480, ideal:1080, max:1080},
+    },
+    audio:true
+
+}
+
 /**
  * The getUserMedia func carries out the request for cam/mic perms
  * pass in the parameters of what you want access to
@@ -59,12 +68,14 @@ let init = async () => {
     client.on('MessageFromPeer', handleMessageFromPeer)
 
 
-    localStream = await navigator.mediaDevices.getUserMedia({video:true, audio:false})
+    localStream = await navigator.mediaDevices.getUserMedia(constraints)
     document.getElementById('user-1').srcObject = localStream
 }
-
-let handleUserLeft = async (MemberId) => {
+    //get rid of video once user bogs off -fancy stuff with member ID to come later
+let handleUserLeft = (MemberId) => {
     document.getElementById('user-2').style.display = 'none'
+    //get rid of the small frame
+    document.getElementById('user-1').classList.remove('smallFrame')
 }
 
 let handleMessageFromPeer = async (message, MemberId) => {
@@ -101,6 +112,9 @@ let createPeerConnection = async (MemberId) => {
     document.getElementById('user-2').srcObject = remoteStream
     //display once the user actually joins
     document.getElementById('user-2').style.display = 'block'
+
+    //implement the small frame behaviour from the CSS
+    document.getElementById('user-1').classList.add('smallFrame')
 
     //Handling when page refresh causes issues with starting cameras
     if(!localStream){
